@@ -4,17 +4,38 @@ const EmberApp = require('ember-cli/lib/broccoli/ember-app');
 
 module.exports = function (defaults) {
   const app = new EmberApp(defaults, {
-    emberData: {
-      deprecations: {
-        // New projects can safely leave this deprecation disabled.
-        // If upgrading, to opt-into the deprecated behavior, set this to true and then follow:
-        // https://deprecations.emberjs.com/id/ember-data-deprecate-store-extends-ember-object
-        // before upgrading to Ember Data 6.0
-        DEPRECATE_STORE_EXTENDS_EMBER_OBJECT: false,
-      },
-    },
-    // Add options here
+  'ember-cli-babel': {
+     // turn off the old transform
+     // (for this to work when using Embroider you need https://github.com/embroider-build/embroider/pull/1673)
+     disableDecoratorTransforms: true,
+   },
+   babel: {
+     plugins: [
+       // add the new transform.
+       require.resolve('decorator-transforms'),
+     ],
+   },
   });
 
-  return app.toTree();
+  const {
+    Webpack
+  } = require("@embroider/webpack");
+
+  return require("@embroider/compat").compatBuild(app, Webpack, {
+    staticEmberSource: true,
+    
+    // staticAddonTestSupportTrees: true,
+    // staticAddonTrees: true,
+    // staticHelpers: true,
+    // staticModifiers: true,
+    // staticComponents: true,
+    // splitAtRoutes: ['route.name'], // can also be a RegExp
+    packagerOptions: {
+       webpackConfig: { 
+        devtool: 'source-map'
+       }
+    },
+    // 
+    extraPublicTrees: []
+  });
 };
